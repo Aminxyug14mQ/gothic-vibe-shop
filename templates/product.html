@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="padding-top: 100px;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-gallery">
+                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" class="main-product-image img-fluid">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="product-detail">
+                <h1 class="product-title">{{ product.name }}</h1>
+                <p class="text-muted">الفئة: {{ product.category }}</p>
+                <div class="product-price mb-4">
+                    <span class="current-price" style="font-size: 2rem;">{{ product.price }} درهم</span>
+                    {% if product.old_price %}
+                    <span class="old-price" style="font-size: 1.5rem;">{{ product.old_price }} درهم</span>
+                    {% endif %}
+                </div>
+                <p class="mb-4">{{ product.description }}</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ get_whatsapp_link(product.name, product.price) }}" target="_blank" class="btn btn-gothic btn-lg">
+                        <i class="fab fa-whatsapp me-2"></i>اطلب عبر واتساب
+                    </a>
+                    <button class="btn btn-outline-light">
+                        <i class="fas fa-heart me-2"></i>إضافة إلى المفضلة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- منتجات ذات صلة -->
+    {% if related_products %}
+    <div class="row mt-5">
+        <h3 class="section-title">منتجات ذات صلة</h3>
+        {% for product in related_products %}
+        <div class="col-md-3 mb-4">
+            <div class="product-card">
+                <div class="product-img-container">
+                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" class="product-img">
+                    <div class="product-overlay">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-gothic">عرض التفاصيل</a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h5 class="product-title">{{ product.name }}</h5>
+                    <div class="product-price">
+                        <span class="current-price">{{ product.price }} درهم</span>
+                        {% if product.old_price %}
+                        <span class="old-price">{{ product.old_price }} درهم</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

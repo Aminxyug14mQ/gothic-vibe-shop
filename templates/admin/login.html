@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - GOTHIC VIBE SHOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gothic-dark: #0a0a0a;
+            --gothic-darker: #050505;
+            --gothic-red: #8b0000;
+            --gothic-blood: #cc0000;
+            --gothic-gray: #1a1a1a;
+            --gothic-light: #e6e6e6;
+            --gothic-border: #2a2a2a;
+        }
+        
+        body {
+            font-family: 'Cinzel', 'Times New Roman', serif;
+            background: linear-gradient(135deg, var(--gothic-darker), var(--gothic-dark));
+            color: var(--gothic-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(139, 0, 0, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 85% 30%, rgba(139, 0, 0, 0.03) 0%, transparent 20%);
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-card {
+            background: linear-gradient(145deg, var(--gothic-dark), var(--gothic-gray));
+            border: 1px solid var(--gothic-red);
+            border-radius: 0;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(139, 0, 0, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h2 {
+            color: var(--gothic-red);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            color: var(--gothic-light);
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        .form-label {
+            color: var(--gothic-light);
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            background: var(--gothic-gray);
+            border: 1px solid var(--gothic-border);
+            color: var(--gothic-light);
+            border-radius: 0;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            background: var(--gothic-gray);
+            border-color: var(--gothic-red);
+            color: var(--gothic-light);
+            box-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
+        }
+        
+        .input-group-text {
+            background: var(--gothic-gray);
+            border: 1px solid var(--gothic-border);
+            border-right: none;
+            color: var(--gothic-light);
+            border-radius: 0;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--gothic-dark), var(--gothic-red));
+            color: var(--gothic-light);
+            border: 1px solid var(--gothic-red);
+            padding: 12px;
+            border-radius: 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.3);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-login:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-login:hover:before {
+            left: 100%;
+        }
+        
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--gothic-red), var(--gothic-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.5);
+        }
+        
+        .alert {
+            border-radius: 0;
+            border: none;
+            border-left: 4px solid;
+            background: rgba(139, 0, 0, 0.2);
+            border-left-color: var(--gothic-red);
+            color: var(--gothic-blood);
+        }
+        
+        .alert-success {
+            background: rgba(0, 100, 0, 0.2);
+            border-left-color: #008000;
+            color: #00cc00;
+        }
+        
+        .back-link {
+            color: var(--gothic-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .back-link:hover {
+            color: var(--gothic-red);
+        }
+        
+        .password-toggle {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .password-toggle:hover {
+            color: var(--gothic-red);
+        }
+        
+        /* تأثيرات للرسائل */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <!-- الرأس -->
+            <div class="login-header">
+                <h2><i class="fas fa-lock me-2"></i>تسجيل الدخول</h2>
+                <p>لوحة تحكم GOTHIC VIBE SHOP</p>
+            </div>
+            
+            <!-- رسائل التنبيه -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }} alert-dismissible fade show fade-in mb-4">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- نموذج تسجيل الدخول -->
+            <form method="POST" action="{{ url_for('admin_login') }}">
+                <div class="mb-4">
+                    <label for="username" class="form-label">اسم المستخدم</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" id="username" name="username" required 
+                               placeholder="أدخل اسم المستخدم" value="{{ request.form.username if request.form }}">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="password" class="form-label">كلمة المرور</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-key"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" required 
+                               placeholder="أدخل كلمة المرور">
+                        <span class="input-group-text password-toggle" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-login mb-4">
+                    <i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول
+                </button>
+            </form>
+            
+            <!-- معلومات المساعدة -->
+            <div class="text-center">
+                <p class="small text-muted mb-2">معلومات تسجيل الدخول الافتراضية:</p>
+                <p class="small text-muted mb-1">اسم المستخدم: <strong>admin</strong></p>
+                <p class="small text-muted mb-3">كلمة المرور: <strong>Fatiha123@#</strong></p>
+                
+                <a href="{{ url_for('index') }}" class="back-link">
+                    <i class="fas fa-arrow-left me-1"></i>العودة إلى الموقع الرئيسي
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // وظيفة إظهار/إخفاء كلمة المرور
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.querySelector('.password-toggle i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+        
+        // إضافة تأثيرات عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            const formElements = document.querySelectorAll('.form-control');
+            formElements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+                element.classList.add('fade-in');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="padding-top: 100px;">
+    <h2 class="section-title">متجر Gothic Vibe</h2>
+    
+    <!-- عوامل التصفية -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-center">
+                <a href="{{ url_for('shop') }}" class="btn btn-outline-light me-2 {% if not category %}active{% endif %}">الكل</a>
+                <a href="{{ url_for('shop', category='تيشيرتات') }}" class="btn btn-outline-light me-2 {% if category == 'تيشيرتات' %}active{% endif %}">تيشيرتات</a>
+                <a href="{{ url_for('shop', category='هوديات') }}" class="btn btn-outline-light me-2 {% if category == 'هوديات' %}active{% endif %}">هوديات</a>
+                <a href="{{ url_for('shop', category='قبعات') }}" class="btn btn-outline-light {% if category == 'قبعات' %}active{% endif %}">قبعات</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- المنتجات -->
+    <div class="row">
+        {% for product in products.items %}
+        <div class="col-md-4 mb-4">
+            <div class="product-card">
+                <div class="product-img-container">
+                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" class="product-img">
+                    <div class="product-overlay">
+                        <div class="btn-group">
+                            <a href="{{ get_whatsapp_link(product.name, product.price) }}" target="_blank" class="btn btn-gothic me-2">
+                                <i class="fab fa-whatsapp me-1"></i>طلب
+                            </a>
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-outline-light">
+                                التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h5 class="product-title">{{ product.name }}</h5>
+                    <p class="text-muted">{{ product.category }}</p>
+                    <div class="product-price">
+                        <span class="current-price">{{ product.price }} درهم</span>
+                        {% if product.old_price %}
+                        <span class="old-price">{{ product.old_price }} درهم</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- الترقيم -->
+    {% if products.pages > 1 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if products.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('shop', page=products.prev_num, category=category) }}">السابق</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in products.iter_pages() %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == products.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('shop', page=page_num, category=category) }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if products.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('shop', page=products.next_num, category=category) }}">التالي</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

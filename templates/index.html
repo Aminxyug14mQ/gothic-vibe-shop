@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- قسم البطل -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">GOTHIC <span>VIBE</span> SHOP</h1>
+        <p class="hero-subtitle">اكتشف مجموعة الملابس القوطية الفريدة والمتميزة التي تناسب ذوقك المميز</p>
+        <a href="{{ url_for('shop') }}" class="btn btn-gothic">استكشف المجموعة</a>
+    </div>
+</section>
+
+<!-- أحدث المنتجات -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">أحدث التصاميم</h2>
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-3 mb-4">
+                <div class="product-card">
+                    <div class="product-img-container">
+                        <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" class="product-img">
+                        <div class="product-overlay">
+                            <div class="btn-group">
+                                <a href="{{ get_whatsapp_link(product.name, product.price) }}" target="_blank" class="btn btn-gothic me-2">
+                                    <i class="fab fa-whatsapp me-1"></i>طلب
+                                </a>
+                                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-outline-gothic">
+                                    التفاصيل
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h5 class="product-title">{{ product.name }}</h5>
+                        <div class="product-price">
+                            <span class="current-price">{{ product.price }} درهم</span>
+                            {% if product.old_price %}
+                            <span class="old-price">{{ product.old_price }} درهم</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('shop') }}" class="btn btn-gothic">عرض جميع المنتجات</a>
+        </div>
+    </div>
+</section>
+
+<!-- قسم من نحن -->
+<section class="py-5 bg-dark" id="about">
+    <div class="container">
+        <h2 class="section-title">من نحن</h2>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <p class="lead">GOTHIC VIBE SHOP هو متجر متخصص في تقديم أجود الملابس ذات الطابع القوطي الفريد.</p>
+                <p>جميع منتجاتنا مصنوعة من مواد عالية الجودة وتصاميم مبتكرة تناسب الذوق المتميز لمحبي الثقافة القوطية.</p>
+                <p>نقدم تصاميم حصرية تجمع بين الأصالة والحداثة في عالم الموضة القوطية، مع الاهتمام بكل التفاصيل والدقة في التنفيذ.</p>
+            </div>
+            <div class="col-md-6">
+                <img src="https://images.unsplash.com/photo-1566206091558-7f218b696731?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="من نحن" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- قسم اتصل بنا -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">تواصل معنا</h2>
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <div class="admin-card text-center">
+                    <h4><i class="fab fa-whatsapp me-2"></i>اطلب عبر واتساب</h4>
+                    <p class="mb-3">يمكنك التواصل معنا مباشرة عبر واتساب للطلب أو الاستفسار</p>
+                    <a href="https://wa.me/212632256568" target="_blank" class="btn btn-gothic">
+                        <i class="fab fa-whatsapp me-2"></i>+212 632-256568
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
