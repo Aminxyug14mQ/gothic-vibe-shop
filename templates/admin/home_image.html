@@ -1,0 +1,74 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>إدارة صور الصفحة الرئيسية</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    إضافة صورة جديدة
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="title">عنوان الصورة (اختياري)</label>
+                            <input type="text" class="form-control" id="title" name="title">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">وصف الصورة (اختياري)</label>
+                            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="position">موضع الصورة</label>
+                            <select class="form-control" id="position" name="position" required>
+                                <option value="hero">صورة رئيسية (Hero)</option>
+                                <option value="banner">بانر</option>
+                                <option value="section">قسم</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">رفع صورة</label>
+                            <input type="file" class="form-control-file" id="image" name="image" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">إضافة الصورة</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>الصور الحالية</h3>
+    <div class="row">
+        {% for image in images %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ url_for('static', filename='uploads/' + image.image) }}" class="card-img-top" alt="{{ image.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ image.title or 'بدون عنوان' }}</h5>
+                    <p class="card-text">{{ image.description or 'بدون وصف' }}</p>
+                    <p class="card-text"><small class="text-muted">الموضع: {{ image.position }}</small></p>
+                    <p class="card-text">
+                        الحالة: 
+                        <span class="badge {% if image.is_active %}badge-success{% else %}badge-danger{% endif %}">
+                            {{ "مفعل" if image.is_active else "معطل" }}
+                        </span>
+                    </p>
+                    <div class="d-flex justify-content-between">
+                        <form method="POST" action="{{ url_for('toggle_home_image', image_id=image.id) }}">
+                            <button type="submit" class="btn btn-sm {% if image.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                                {{ "تعطيل" if image.is_active else "تفعيل" }}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('delete_home_image', image_id=image.id) }}">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذه الصورة؟')">حذف</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

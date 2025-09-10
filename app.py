@@ -41,7 +41,15 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
+# نموذج الصور للصفحة الرئيسية
+class HomeImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    image = db.Column(db.String(100), nullable=False)
+    position = db.Column(db.String(50), nullable=False)  # مثل: 'hero', 'banner', 'section'
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 # دالة لإنشاء رابط واتساب
 def get_whatsapp_link(product_name, product_price):
     phone_number = "212632256568"
@@ -81,8 +89,8 @@ def admin_required(f):
 @app.route('/')
 def index():
     products = Product.query.filter_by(in_stock=True).order_by(Product.created_at.desc()).limit(8).all()
-    return render_template('index.html', products=products)
-
+    home_images = HomeImage.query.filter_by(is_active=True).order_by(HomeImage.position).all()
+    return render_template('index.html', products=products, home_images=home_images)
 # صفحة المتجر
 @app.route('/shop')
 def shop():
@@ -193,7 +201,67 @@ def admin_products():
 @admin_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
+# إدارة صور الصفحة الرئيسية
+@app.route('/admin/home-images', methods=['GET', 'POST'])
+@admin_required
+def admin_home_images():
+    if request.method == 'POST':
+        # إضافة صورة جديدة
+        title = request.form.get('title')
+        description = request.form.get('description')
+        position = request.form.get('position')
+        
+        # معالجة صورة
+        image = request.files.get('image')
+        image_filename = 'default.jpg'
+        if image and image.filename != '':
+            image_filename = secure_filename(f"home_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.filename}")
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+            image.save(image_path)
+        
+        home_image = HomeImage(
+            title=title,
+            description=description,
+            image=image_filename,
+            position=position
+        )
+        
+        db.session.add(home_image)
+        db.session.commit()
+        flash('تم إضافة الصورة بنجاح', 'success')
+        return redirect(url_for('admin_home_images'))
     
+    # عرض الصور
+    images = HomeImage.query.order_by(HomeImage.created_at.desc()).all()
+    return render_template('admin/home_images.html', images=images)
+
+# تحديث حالة الصورة (تفعيل/إلغاء)
+@app.route('/admin/home-images/toggle/<int:image_id>', methods=['POST'])
+@admin_required
+def toggle_home_image(image_id):
+    image = HomeImage.query.get_or_404(image_id)
+    image.is_active = not image.is_active
+    db.session.commit()
+    status = "مفعل" if image.is_active else "معطل"
+    flash(f'تم {status} الصورة بنجاح', 'success')
+    return redirect(url_for('admin_home_images'))
+
+# حذف صورة
+@app.route('/admin/home-images/delete/<int:image_id>', methods=['POST'])
+@admin_required
+def delete_home_image(image_id):
+    image = HomeImage.query.get_or_404(image_id)
+    
+    # حذف صورة إذا لم تكن الصورة الافتراضية
+    if image.image != 'default.jpg':
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image.image)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    
+    db.session.delete(image)
+    db.session.commit()
+    flash('تم حذف الصورة بنجاح', 'success')
+    return redirect(url_for('admin_home_images'))    
     # حذف صورة المنتج إذا لم تكن الصورة الافتراضية
     if product.image != 'default.jpg':
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], product.image)

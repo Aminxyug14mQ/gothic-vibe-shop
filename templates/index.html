@@ -1,17 +1,47 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- قسم البطل -->
+<!-- قسم البطل مع دعم الصور من لوحة التحكم -->
 <section class="hero-section">
-    <div class="container">
-        <h1 class="hero-title">GOTHIC <span>VIBE</span> SHOP</h1>
-        <p class="hero-subtitle">اكتشف مجموعة الملابس القوطية الفريدة والمتميزة التي تناسب ذوقك المميز</p>
-        <a href="{{ url_for('shop') }}" class="btn btn-gothic">استكشف المجموعة</a>
+    {% for image in home_images if image.position == 'hero' and image.is_active %}
+    <div class="hero-background" style="background-image: url('{{ url_for('static', filename='uploads/' + image.image) }}');">
+        <div class="container">
+            <div class="hero-content">
+                {% if image.title %}<h1 class="hero-title">{{ image.title }}</h1>{% endif %}
+                {% if image.description %}<p class="hero-subtitle">{{ image.description }}</p>{% endif %}
+                <a href="{{ url_for('shop') }}" class="btn btn-gothic">استكشف المجموعة</a>
+            </div>
+        </div>
     </div>
+    {% else %}
+    <!-- الصورة الافتراضية إذا لم توجد صور -->
+    <div class="hero-background"
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Gothic Vibe Shop</h1>
+                <p class="hero-subtitle">اكتشف مجموعة الملابس القوطية الفريدة والمتميزة التي تناسب ذوقك المميز</p>
+                <a href="{{ url_for('shop') }}" class="btn btn-gothic">استكشف المجموعة</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </section>
 
+<!-- بانر وسطي مع دعم الصور من لوحة التحكم -->
+{% for image in home_images if image.position == 'banner' and image.is_active %}
+<section class="banner-section py-4">
+    <div class="container">
+        <div class="banner-content text-center">
+            {% if image.title %}<h3 class="banner-title">{{ image.title }}</h3>{% endif %}
+            {% if image.description %}<p class="banner-text">{{ image.description }}</p>{% endif %}
+            <img src="{{ url_for('static', filename='uploads/' + image.image) }}" alt="{{ image.title }}" class="banner-img img-fluid">
+        </div>
+    </div>
+</section>
+{% endfor %}
+
 <!-- أحدث المنتجات -->
-<section class="py-5">
+<section class="products-section py-5">
     <div class="container">
         <h2 class="section-title">أحدث التصاميم</h2>
         <div class="row">
@@ -21,14 +51,7 @@
                     <div class="product-img-container">
                         <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" class="product-img">
                         <div class="product-overlay">
-                            <div class="btn-group">
-                                <a href="{{ get_whatsapp_link(product.name, product.price) }}" target="_blank" class="btn btn-gothic me-2">
-                                    <i class="fab fa-whatsapp me-1"></i>طلب
-                                </a>
-                                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-outline-gothic">
-                                    التفاصيل
-                                </a>
-                            </div>
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-gothic">عرض التفاصيل</a>
                         </div>
                     </div>
                     <div class="product-info">
@@ -50,38 +73,116 @@
     </div>
 </section>
 
-<!-- قسم من نحن -->
-<section class="py-5 bg-dark" id="about">
+<!-- قسم من نحن مع دعم الصور من لوحة التحكم -->
+<section class="about-section py-5 bg-dark">
     <div class="container">
-        <h2 class="section-title">من نحن</h2>
         <div class="row align-items-center">
             <div class="col-md-6">
-                <p class="lead">GOTHIC VIBE SHOP هو متجر متخصص في تقديم أجود الملابس ذات الطابع القوطي الفريد.</p>
+                <h2 class="section-title">من نحن</h2>
+                <p>Gothic Vibe Shop هو متجر متخصص في تقديم أجود الملابس ذات الطابع القوطي الفريد. نقدم تصاميم حصرية تجمع بين الأصالة والحداثة في عالم الموضة القوطية.</p>
                 <p>جميع منتجاتنا مصنوعة من مواد عالية الجودة وتصاميم مبتكرة تناسب الذوق المتميز لمحبي الثقافة القوطية.</p>
-                <p>نقدم تصاميم حصرية تجمع بين الأصالة والحداثة في عالم الموضة القوطية، مع الاهتمام بكل التفاصيل والدقة في التنفيذ.</p>
             </div>
             <div class="col-md-6">
-                <img src="https://images.unsplash.com/photo-1566206091558-7f218b696731?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="من نحن" class="img-fluid rounded">
+                {% for image in home_images if image.position == 'about' and image.is_active %}
+                <img src="{{ url_for('static', filename='uploads/' + image.image) }}" alt="من نحن" class="about-img img-fluid rounded">
+                {% else %}
+                 alt="من نحن" class="about-img img-fluid rounded">
+                {% endfor %}
             </div>
         </div>
     </div>
 </section>
 
-<!-- قسم اتصل بنا -->
-<section class="py-5">
+<!-- قسم إضافي للصور -->
+{% for image in home_images if image.position == 'section' and image.is_active %}
+<section class="custom-section py-5">
     <div class="container">
-        <h2 class="section-title">تواصل معنا</h2>
-        <div class="row">
-            <div class="col-md-6 mx-auto">
-                <div class="admin-card text-center">
-                    <h4><i class="fab fa-whatsapp me-2"></i>اطلب عبر واتساب</h4>
-                    <p class="mb-3">يمكنك التواصل معنا مباشرة عبر واتساب للطلب أو الاستفسار</p>
-                    <a href="https://wa.me/212632256568" target="_blank" class="btn btn-gothic">
-                        <i class="fab fa-whatsapp me-2"></i>+212 632-256568
-                    </a>
-                </div>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <img src="{{ url_for('static', filename='uploads/' + image.image) }}" alt="{{ image.title }}" class="img-fluid rounded">
+            </div>
+            <div class="col-md-6">
+                {% if image.title %}<h2 class="section-title">{{ image.title }}</h2>{% endif %}
+                {% if image.description %}<p>{{ image.description }}</p>{% endif %}
             </div>
         </div>
     </div>
 </section>
+{% endfor %}
+
+<style>
+.hero-section {
+    position: relative;
+    min-height: 80vh;
+    overflow: hidden;
+}
+
+.hero-background {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.hero-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(0,0,0,0.7), rgba(128,0,0,0.5));
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    text-align: center;
+}
+
+.banner-section {
+    background: var(--gothic-gray);
+    border-top: 2px solid var(--gothic-red);
+    border-bottom: 2px solid var(--gothic-red);
+}
+
+.banner-content {
+    color: var(--gothic-light);
+}
+
+.banner-img {
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.about-img {
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.custom-section {
+    background: var(--gothic-dark);
+    border-left: 4px solid var(--gothic-red);
+}
+
+@media (max-width: 768px) {
+    .hero-background {
+        min-height: 60vh;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+}
+</style>
 {% endblock %}
