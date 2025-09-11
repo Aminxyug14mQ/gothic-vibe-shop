@@ -397,7 +397,7 @@ def create_tables():
     # إنشاء مستخدم مسؤول افتراضي إذا لم يكن موجوداً
     if not User.query.filter_by(username='admin').first():
         admin_user = User(username='admin', is_admin=True)
-        admin_user.set_password('Fatiha1290#')
+        admin_user.set_password('Fatiha123@#')
         db.session.add(admin_user)
         db.session.commit()
 
