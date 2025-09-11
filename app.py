@@ -24,10 +24,12 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
     old_price = db.Column(db.Float, nullable=True)
-    image = db.Column(db.String(100), nullable=False, default='default.jpg')
     category = db.Column(db.String(50), nullable=False)
     in_stock = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # العلاقة مع صور المنتج
+    images = db.relationship('ProductImage', backref='product', lazy=True, cascade='all, delete-orphan')
 
 # نموذج المستخدم
 class User(db.Model):
@@ -41,21 +43,31 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
 # نموذج الصور للصفحة الرئيسية
 class HomeImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=True)
     description = db.Column(db.Text, nullable=True)
     image = db.Column(db.String(100), nullable=False)
-    position = db.Column(db.String(50), nullable=False)  # مثل: 'hero', 'banner', 'section'
+    position = db.Column(db.String(50), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-# دالة لإنشاء رابط واتساب
+
+# نموذج صور المنتجات
+class ProductImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    image = db.Column(db.String(100), nullable=False)
+    is_primary = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# دالة الإنشاء رابط واتساب
 def get_whatsapp_link(product_name, product_price):
     phone_number = "212632256568"
-    message = f"مرحباً، أريد طلب هذا المنتج: {product_name} - السعر: {product_price} درهم"
+    message = f"مرحبا، أريد طلب هذا المنتج: {product_name} - السعر: {product_price} درهم"
     encoded_message = quote(message)
-    return f"https://wa.me/{phone_number}?text={encoded_message}"
+    return f'https://wa.me/{phone_number}?text={encoded_message}'
 
 @app.context_processor
 def utility_processor():
@@ -91,6 +103,7 @@ def index():
     products = Product.query.filter_by(in_stock=True).order_by(Product.created_at.desc()).limit(8).all()
     home_images = HomeImage.query.filter_by(is_active=True).order_by(HomeImage.position).all()
     return render_template('index.html', products=products, home_images=home_images)
+
 # صفحة المتجر
 @app.route('/shop')
 def shop():
@@ -142,16 +155,17 @@ def admin_dashboard():
     recent_products = Product.query.order_by(Product.created_at.desc()).limit(3).all()
     
     return render_template('admin/dashboard.html', 
-                         products_count=products_count,
-                         available_products=available_products,
-                         unavailable_products=unavailable_products,
-                         recent_products=recent_products,
+                         products_count=products_count, 
+                         available_products=available_products, 
+                         unavailable_products=unavailable_products, 
+                         recent_products=recent_products, 
                          user=user)
+
 # إدارة المنتجات
 @app.route('/admin/products', methods=['GET', 'POST'])
 @admin_required
 def admin_products():
-    user = User.query.get(session['user_id'])  # إضافة هذا السطر
+    user = User.query.get(session['user_id'])
     
     if request.method == 'POST':
         # إضافة منتج جديد
@@ -161,24 +175,45 @@ def admin_products():
         old_price = float(request.form.get('old_price')) if request.form.get('old_price') else None
         category = request.form.get('category')
         
-        # معالجة صورة المنتج
-        image = request.files.get('image')
-        image_filename = 'default.jpg'
-        if image and image.filename != '':
-            image_filename = secure_filename(image.filename)
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
-            image.save(image_path)
-        
         product = Product(
             name=name,
             description=description,
             price=price,
             old_price=old_price,
-            image=image_filename,
             category=category
         )
         
         db.session.add(product)
+        db.session.flush()  # الحصول على ID المنتج دون commit
+        
+        # معالجة الصور المتعددة
+        images = request.files.getlist('images')
+        image_added = False
+        
+        for i, image in enumerate(images):
+            if image and image.filename != '':
+                image_filename = secure_filename(f"product_{product.id}_{i}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.filename}")
+                image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+                image.save(image_path)
+                
+                product_image = ProductImage(
+                    product_id=product.id,
+                    image=image_filename,
+                    is_primary=(i == 0)  # أول صورة تكون رئيسية
+                )
+                
+                db.session.add(product_image)
+                image_added = True
+        
+        # إذا لم يتم رفع أي صور، أضف صورة افتراضية
+        if not image_added:
+            product_image = ProductImage(
+                product_id=product.id,
+                image='default.jpg',
+                is_primary=True
+            )
+            db.session.add(product_image)
+        
         db.session.commit()
         flash('تم إضافة المنتج بنجاح', 'success')
         return redirect(url_for('admin_products'))
@@ -188,19 +223,26 @@ def admin_products():
     per_page = 10
     products = Product.query.order_by(Product.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     
-    return render_template('admin/products.html', products=products, user=user)  # إضافة user هنا
-    # عرض المنتجات
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
-    products = Product.query.order_by(Product.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
-    
-    return render_template('admin/products.html', products=products)
+    return render_template('admin/products.html', products=products, user=user)
 
 # حذف منتج
 @app.route('/admin/products/delete/<int:product_id>', methods=['POST'])
 @admin_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
+    
+    # حذف صور المنتج
+    for product_image in product.images:
+        if product_image.image != 'default.jpg':
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], product_image.image)
+            if os.path.exists(image_path):
+                os.remove(image_path)
+    
+    db.session.delete(product)
+    db.session.commit()
+    flash('تم حذف المنتج بنجاح', 'success')
+    return redirect(url_for('admin_products'))
+
 # إدارة صور الصفحة الرئيسية
 @app.route('/admin/home-images', methods=['GET', 'POST'])
 @admin_required
@@ -246,7 +288,7 @@ def toggle_home_image(image_id):
     flash(f'تم {status} الصورة بنجاح', 'success')
     return redirect(url_for('admin_home_images'))
 
-# حذف صورة
+# حذف صورة الصفحة الرئيسية
 @app.route('/admin/home-images/delete/<int:image_id>', methods=['POST'])
 @admin_required
 def delete_home_image(image_id):
@@ -261,17 +303,84 @@ def delete_home_image(image_id):
     db.session.delete(image)
     db.session.commit()
     flash('تم حذف الصورة بنجاح', 'success')
-    return redirect(url_for('admin_home_images'))    
-    # حذف صورة المنتج إذا لم تكن الصورة الافتراضية
-    if product.image != 'default.jpg':
-        image_path = os.path.join(app.config['UPLOAD_FOLDER'], product.image)
-        if os.path.exists(image_path):
-            os.remove(image_path)
+    return redirect(url_for('admin_home_images'))
+
+# تعديل منتج
+@app.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_product(product_id):
+    product = Product.query.get_or_404(product_id)
     
-    db.session.delete(product)
+    if request.method == 'POST':
+        # كود تحديث المنتج
+        product.name = request.form.get('name')
+        product.description = request.form.get('description')
+        product.price = float(request.form.get('price'))
+        product.old_price = float(request.form.get('old_price')) if request.form.get('old_price') else None
+        product.category = request.form.get('category')
+        
+        db.session.commit()
+        flash('تم تحديث المنتج بنجاح', 'success')
+        return redirect(url_for('admin_products'))
+    
+    return render_template('admin/edit_product.html', product=product)
+
+# إضافة صور للمنتج
+@app.route('/admin/products/add-image/<int:product_id>', methods=['POST'])
+@admin_required
+def add_product_image(product_id):
+    product = Product.query.get_or_404(product_id)
+    
+    image = request.files.get('image')
+    if image and image.filename != '':
+        image_filename = secure_filename(f"product_{product_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.filename}")
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+        image.save(image_path)
+        
+        product_image = ProductImage(
+            product_id=product_id,
+            image=image_filename,
+            is_primary=False
+        )
+        
+        db.session.add(product_image)
+        db.session.commit()
+        flash('تم إضافة الصورة بنجاح', 'success')
+    
+    return redirect(url_for('edit_product', product_id=product_id))
+
+# تعيين صورة رئيسية
+@app.route('/admin/products/set-primary-image/<int:image_id>', methods=['POST'])
+@admin_required
+def set_primary_image(image_id):
+    product_image = ProductImage.query.get_or_404(image_id)
+    
+    # إلغاء التعيين السابق
+    ProductImage.query.filter_by(product_id=product_image.product_id, is_primary=True).update({'is_primary': False})
+    
+    # تعيين الصورة الجديدة كرئيسية
+    product_image.is_primary = True
     db.session.commit()
-    flash('تم حذف المنتج بنجاح', 'success')
-    return redirect(url_for('admin_products'))
+    
+    flash('تم تعيين الصورة كرئيسية', 'success')
+    return redirect(url_for('edit_product', product_id=product_image.product_id))
+
+# حذف صورة المنتج
+@app.route('/admin/products/delete-image/<int:image_id>', methods=['POST'])
+@admin_required
+def delete_product_image(image_id):
+    product_image = ProductImage.query.get_or_404(image_id)
+    product_id = product_image.product_id
+    
+    # حذف صورة من السيرفر
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], product_image.image)
+    if os.path.exists(image_path):
+        os.remove(image_path)
+    
+    db.session.delete(product_image)
+    db.session.commit()
+    flash('تم حذف الصورة بنجاح', 'success')
+    return redirect(url_for('edit_product', product_id=product_id))
 
 # تسجيل الخروج
 @app.route('/admin/logout')
@@ -288,7 +397,7 @@ def create_tables():
     # إنشاء مستخدم مسؤول افتراضي إذا لم يكن موجوداً
     if not User.query.filter_by(username='admin').first():
         admin_user = User(username='admin', is_admin=True)
-        admin_user.set_password('Fatiha123@#')
+        admin_user.set_password('Fatiha1290#')
         db.session.add(admin_user)
         db.session.commit()
 

@@ -1,0 +1,84 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>تعديل المنتج: {{ product.name }}</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">معلومات المنتج</div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label>اسم المنتج</label>
+                            <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>الوصف</label>
+                            <textarea name="description" class="form-control" rows="4" required>{{ product.description }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>السعر (درهم)</label>
+                            <input type="number" step="0.01" name="price" class="form-control" value="{{ product.price }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>السعر القديم (اختياري)</label>
+                            <input type="number" step="0.01" name="old_price" class="form-control" value="{{ product.old_price or '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>الفئة</label>
+                            <select name="category" class="form-control" required>
+                                <option value="ملابس" {% if product.category == 'ملابس' %}selected{% endif %}>ملابس</option>
+                                <option value="إكسسوارات" {% if product.category == 'إكسسوارات' %}selected{% endif %}>إكسسوارات</option>
+                                <option value="أحذية" {% if product.category == 'أحذية' %}selected{% endif %}>أحذية</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">تحديث المنتج</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">إدارة الصور</div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_product_image', product_id=product.id) }}" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>إضافة صورة جديدة</label>
+                            <input type="file" name="image" class="form-control-file" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">إضافة صورة</button>
+                    </form>
+                    
+                    <hr>
+                    
+                    <h5>صور المنتج الحالية</h5>
+                    <div class="row">
+                        {% for image in product.images %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card {% if image.is_primary %}border-primary{% endif %}">
+                                <img src="{{ url_for('static', filename='uploads/' + image.image) }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                <div class="card-body text-center">
+                                    {% if image.is_primary %}
+                                    <span class="badge bg-primary">رئيسية</span>
+                                    {% else %}
+                                    <form method="POST" action="{{ url_for('set_primary_image', image_id=image.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">تعيين رئيسية</button>
+                                    </form>
+                                    {% endif %}
+                                    <form method="POST" action="{{ url_for('delete_product_image', image_id=image.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('هل تريد حذف هذه الصورة؟')">حذف</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
